@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calcolatore Feedback Guida</title>
+    <title>Calcolatore Feedback Guida (con Storage)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -34,9 +34,7 @@
             transition: opacity .2s;
             border-radius: 5px;
         }
-        .score-slider:hover {
-            opacity: 1;
-        }
+        .score-slider:hover { opacity: 1; }
         .score-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -53,71 +51,28 @@
             cursor: pointer;
             border-radius: 50%;
         }
-        /* Stili per il pulsante Blu (Primario) */
+        
+        /* Stili Pulsanti */
         .btn-primary {
-            background-color: #007bff;
-            color: white;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
-            box-shadow: 0 4px #0056b3;
+            background-color: #007bff; color: white; font-weight: 600;
+            padding: 0.75rem 1.5rem; border-radius: 0.75rem; transition: background-color 0.2s;
         }
-        .btn-primary:hover {
-            background-color: #0069d9;
-        }
-        .btn-primary:active {
-            background-color: #0056b3;
-            box-shadow: 0 2px #0056b3;
-            transform: translateY(2px);
-        }
-        .btn-primary:disabled {
-            background-color: #9acaff;
-            box-shadow: 0 4px #76a8d5;
-            cursor: not-allowed;
-        }
+        .btn-primary:hover { background-color: #0069d9; }
         
-        /* Stili per il pulsante Rosso (Pericoloso/Blocca) */
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
-            box-shadow: 0 4px #a71d2a;
-        }
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-        .btn-danger:active {
-            background-color: #a71d2a;
-            box-shadow: 0 2px #a71d2a;
-            transform: translateY(2px);
-        }
-         .btn-danger:disabled {
-            background-color: #f19ca5;
-            box-shadow: 0 4px #d17e87;
-            cursor: not-allowed;
-        }
-        
-        /* Stili per il pulsante Grigio (Secondario/Chiudi) */
         .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
-            box-shadow: 0 4px #4a4e53;
+            background-color: #6c757d; color: white; font-weight: 600;
+            padding: 0.75rem 1.5rem; border-radius: 0.75rem; transition: background-color 0.2s;
         }
-        .btn-secondary:hover {
-            background-color: #5a6268;
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        .btn-danger {
+            background-color: #dc3545; color: white; font-weight: 600;
+            padding: 0.75rem 1.5rem; border-radius: 0.75rem; transition: background-color 0.2s;
         }
-        .btn-secondary:active {
-            background-color: #4a4e53;
-            box-shadow: 0 2px #4a4e53;
-            transform: translateY(2px);
+        .btn-danger:hover { background-color: #c82333; }
+
+        .btn-primary:disabled, .btn-secondary:disabled, .btn-danger:disabled {
+            background-color: #e9ecef; color: #6c757d; cursor: not-allowed;
         }
         
         /* Stili per la Home Page */
@@ -125,41 +80,32 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 1rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
         }
-        .saved-lesson-item a {
-            font-weight: 500;
-            color: #007bff;
-            text-decoration: none;
-        }
-        .saved-lesson-item a:hover {
-            text-decoration: underline;
-        }
+        .saved-lesson-item:last-child { border-bottom: none; }
+        
         .delete-btn {
-            background: none;
-            border: none;
-            color: #dc3545;
-            font-weight: bold;
-            font-size: 1.25rem;
-            cursor: pointer;
+            background-color: #fef2f2; color: #ef4444; font-weight: bold;
+            border-radius: 50%; width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid #fecaca;
+            line-height: 1;
         }
+        .delete-btn:hover { background-color: #fee2e2; }
+
     </style>
 </head>
 <body>
 
 <!-- 
     PAGINA DI AVVIO (LANDING PAGE)
-    Visibile solo se non c'è un ID lezione nell'URL
 -->
 <div id="home-view" class="container">
     <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 text-center">
         Calcolatore Feedback Guida
     </h1>
     
-    <!-- Card per Nuova Lezione -->
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Crea Nuova Valutazione</h2>
         <div class="flex flex-col sm:flex-row gap-4">
@@ -170,20 +116,17 @@
         </div>
         <p id="landing-error" class="text-red-600 text-sm mt-2 hidden"></p>
     </div>
-
-    <!-- Card per Lezioni Salvate -->
+    
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Valutazioni Salvate</h2>
         <div id="saved-lessons-list" class="space-y-2">
             <!-- Elenco caricato da JS -->
-            <p class="text-gray-500">Nessuna valutazione salvata.</p>
         </div>
     </div>
 </div>
 
 <!-- 
     PAGINA CALCOLATORE (APP PRINCIPALE)
-    Visibile solo se c'è un ID lezione nell'URL
 -->
 <div id="calculator-page" class="container hidden">
     <!-- SEZIONE GESTIONE E SALVATAGGIO (NUOVA) -->
@@ -194,7 +137,7 @@
                     Allievo: <span id="student-name-display" class="text-blue-600">...</span>
                 </h1>
                 <p id="lock-status" class="text-sm font-medium text-gray-500">
-                    Stato: <span class="text-yellow-600 font-bold">In corso (Salvataggio automatico)</span>
+                    Stato: <span class="text-green-600">In corso...</span>
                 </p>
             </div>
             <div class="flex gap-4">
@@ -212,7 +155,7 @@
     <div id="valuation-section" class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">1. Valutazione Rapida (20 Criteri, Scala 0-10)</h2>
         <p class="text-sm text-gray-600 mb-4">
-            Assegna un punteggio da 0 a 10. Il salvataggio è automatico ad ogni modifica.
+            Assegna un punteggio da 0 a 10. La descrizione di supporto appare sotto il nome del criterio.
         </p>
 
         <div id="quick-criteria-container" class="grid lg:grid-cols-3 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -221,18 +164,19 @@
 
         <div class="mt-8">
             <label for="lesson-notes" class="block text-sm font-medium text-gray-700 mb-2">Note della Lezione (Opzionale):</label>
-            <textarea id="lesson-notes" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"></textarea>
+            <textarea id="lesson-notes" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" oninput="saveLessonData(false)"></textarea>
         </div>
     </div>
 
     <!-- RIEPILOGO AREE DI COMPETENZA (2) -->
     <div id="competency-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">2. Riepilogo Aree di Competenza (Scala 0-50)</h2>
+        <!-- MODIFICA COSA FARE 2: Titolo aggiornato a Scala 0-5 -->
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">2. Riepilogo Aree di Competenza (Scala 0-5)</h2>
         <div id="competency-summary" class="grid md:grid-cols-2 gap-4">
-            <!-- I punteggi delle 10 aree saranno qui -->
+            <!-- I punteggi delle 10 aree saranno qui (ora in scala 0-5) -->
         </div>
         <div class="mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg flex justify-between items-center">
-            <span class="text-lg font-bold text-indigo-800">Punteggio Totale Calcolato (Somma delle 10 Aree):</span>
+            <span class="text-lg font-bold text-indigo-800">Punteggio Totale Calcolato (Somma delle 10 Aree 0-50):</span>
             <span id="total-score-500" class="text-2xl font-extrabold text-indigo-800">0 / 500</span>
         </div>
     </div>
@@ -249,17 +193,13 @@
             <!-- I punteggi dettagliati raggruppati saranno inseriti qui -->
         </div>
     </div>
-    
-    <!-- SEZIONE GEMINI RIMOSSA -->
-
 </div>
 
-<!-- LOGICA JAVASCRIPT E GESTIONE LOCALSTORAGE -->
+<!-- LOGICA JAVASCRIPT E STORAGE -->
 <script type="module">
 
-    let quickScores = {}; 
     let currentLessonId = null;
-    let isPageLocked = false;
+    let quickScores = {}; 
     
     // 1. Mappatura Descrizioni 0-10
     const SCORE_10_INTERPRETATION = {
@@ -277,13 +217,28 @@
     };
 
     // 2. Lista dei 20 criteri rapidi (Scala 0-10)
+    // L'indice dell'array è (B-numero - 2). Es: B2 è indice 0, B21 è indice 19.
     const QUICK_CRITERIA = [
-        "Sguardo", "Fluidità nel volante", "Accelerazione in partenza", "Modulazione della frenata", 
-        "Fluidità nel cambio", "Utilizzo della frizione", "Partenza in salita", "Posizione del veicolo su strada", 
-        "Svolta a destra", "Svolta a sinistra", "Comportamento negli incroci", "Punto morto", 
-        "Voltarsi nelle retromarce", "Inversione di marcia", "Parcheggi in retromarcia", "Accostare il veicolo", 
-        "Padronanza delle situazioni", "Postura di guida", "Regolazione e uso degli specchi retrovisori", 
-        "Uso e conoscenza dei dispositivi e teoria motore"
+        "Sguardo", // B2 -> indice 0
+        "Fluidità nel volante", // B3 -> indice 1
+        "Accelerazione in partenza", // B4 -> indice 2
+        "Modulazione della frenata", // B5 -> indice 3
+        "Fluidità nel cambio", // B6 -> indice 4
+        "Utilizzo della frizione", // B7 -> indice 5
+        "Partenza in salita", // B8 -> indice 6
+        "Posizione del veicolo su strada", // B9 -> indice 7
+        "Svolta a destra", // B10 -> indice 8
+        "Svolta a sinistra", // B11 -> indice 9
+        "Comportamento negli incroci", // B12 -> indice 10
+        "Punto morto", // B13 -> indice 11
+        "Voltarsi nelle retromarce", // B14 -> indice 12
+        "Inversione di marcia", // B15 -> indice 13
+        "Parcheggi in retromarcia", // B16 -> indice 14
+        "Accostare il veicolo", // B17 -> indice 15
+        "Padronanza delle situazioni", // B18 -> indice 16
+        "Postura di guida", // B19 -> indice 17
+        "Regolazione e uso degli specchi retrovisori", // B20 -> indice 18
+        "Uso e conoscenza dei dispositivi e teoria motore" // B21 -> indice 19
     ];
 
     // 3. Lista dei 77 criteri dettagliati (Scala 0-5)
@@ -315,8 +270,11 @@
         { name: "10. Fase I Esame", criteria: [70, 71, 72, 73, 74, 75, 76] }
     ];
 
-    // --- FUNZIONI DI CALCOLO (INVARIATE) ---
-
+    /**
+     * Esegue l'arrotondamento a soglia (0.5 -> 0, 0.51 -> 1), come nel foglio di calcolo.
+     * @param {number} value Il punteggio decimale risultante dalle formule.
+     * @returns {number} Il punteggio intero arrotondato (0-5).
+     */
     function customRound(value) {
         if (value <= 0.5) return 0;
         if (value <= 1.5) return 1;
@@ -326,9 +284,17 @@
         return 5; 
     }
 
+    /**
+     * MODIFICA COSA FARE 2:
+     * Calcola la media dei punteggi (0-5) per un set di criteri dettagliati.
+     * @param {number[]} indices Indici dei criteri in DETAILED_CRITERIA da includere.
+     * @param {Object} detailedScores I punteggi calcolati.
+     * @returns {Object} Un oggetto contenente { score_0_50, average_0_5_display }
+     */
     function calculateAreaScore(indices, detailedScores) {
         let sum = 0;
         let count = 0;
+
         indices.forEach(index => {
             const criterionName = DETAILED_CRITERIA[index];
             const score = detailedScores[criterionName];
@@ -337,80 +303,112 @@
                 count++;
             }
         });
-        const average_0_5 = count > 0 ? sum / count : 0;
-        const score_0_50 = average_0_5 * 10;
-        return Math.min(50, Math.max(0, parseFloat(score_0_50.toFixed(0)))); 
+
+        const average_0_5_raw = count > 0 ? sum / count : 0;
+        
+        // Punteggio 0-50 per il totale
+        const score_0_50 = Math.min(50, Math.max(0, parseFloat((average_0_5_raw * 10).toFixed(0))));
+        
+        // Punteggio 0-5 per la visualizzazione (con un decimale)
+        const average_0_5_display = parseFloat(average_0_5_raw.toFixed(1));
+
+        return { score_0_50, average_0_5_display };
     }
-    
+
+
+    /**
+     * Applica le 77 formule complesse e calcola le 10 aree di competenza.
+     */
     function calculateScores(quickScores) {
         const calculatedScores = {};
         const q = QUICK_CRITERIA.map(name => quickScores[name] || 0);
-        const getQ = (index) => q[index] || 0;
+        // Helper per mappare B(n) a q[n-2]
+        // Esempio: B2 -> q[0], B3 -> q[1], B19 -> q[17], B21 -> q[19]
+        const getQ = (index) => q[index] || 0; 
 
+        // --- INIZIO COSA FARE 1: SOSTITUZIONE FORMULE ---
+        // Lista delle 77 formule come funzioni, tradotte fedelmente
+        // dall'Excel fornito. B(n) è mappato a getQ(n-2).
         const formulas = [
-            (q) => (getQ(17) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, (q) => (getQ(17) * 1) / 2, 
-            (q) => (getQ(2) * 0.5 + getQ(9) * 0.25 + getQ(10) * 0.25) / 2, (q) => (getQ(2) * 0.4 + getQ(9) * 0.3 + getQ(10) * 0.3) / 2, 
-            (q) => (getQ(2) * 0.5 + getQ(9) * 0.25 + getQ(10) * 0.25) / 2, (q) => (getQ(2) * 0.6 + getQ(9) * 0.2 + getQ(10) * 0.2) / 2, 
-            (q) => (getQ(1) * 1) / 2, (q) => (getQ(1) * 1) / 2, (q) => (getQ(1) * 1) / 2, (q) => (getQ(1) * 1) / 2, 
-            (q) => (getQ(1) * 0.5 + getQ(9) * 0.5) / 2, (q) => (getQ(1) * 0.5 + getQ(10) * 0.5) / 2, 
-            (q) => (getQ(18) * 0.4 + getQ(11) * 0.1 + getQ(1) * 0.3 + getQ(8) * 0.1 + getQ(16) * 0.1) / 2, 
-            (q) => getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(1) * 0.5) / 2 : 0, 
-            (q) => getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) / 2 : 0, 
-            (q) => getQ(3) > 0 ? (getQ(17) * 1) / 2 : 0, 
-            (q) => getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.25 + getQ(16) * 0.25) / 2 : 0, 
-            (q) => getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.25 + getQ(17) * 0.25) / 2 : 0, 
-            (q) => getQ(6) > 0 ? (getQ(6) * 0.5 + getQ(17) * 0.5) / 2 : 0, 
-            (q) => getQ(6) > 0 ? (getQ(6) * 0.5 + getQ(17) * 0.5) / 2 : 0, 
-            (q) => getQ(6) > 0 ? (getQ(6) * 1) / 2 : 0, 
-            (q) => getQ(6) > 0 ? (getQ(6) * 0.5 + getQ(17) * 0.5) / 2 : 0, 
-            (q) => getQ(6) > 0 ? (getQ(6) * 0.5 + getQ(3) * 0.5) / 2 : 0, 
-            (q) => getQ(6) > 0 ? (getQ(6) * 0.5 + getQ(3) * 0.5) / 2 : 0, 
-            (q) => (getQ(7) * 1) / 2, 
-            (q) => getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) / 2 : 0, 
-            (q) => getQ(5) > 0 ? (getQ(5) * 0.7 + getQ(6) * 0.3) / 2 : 0, 
-            (q) => getQ(5) > 0 ? (getQ(5) * 0.7 + getQ(6) * 0.2 + getQ(4) * 0.1) / 2 : 0, 
-            (q) => getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(6) * 0.25 + getQ(8) * 0.25) / 2 : 0, 
-            (q) => getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(6) * 0.2 + getQ(4) * 0.2 + getQ(8) * 0.1) / 2 : 0, 
-            (q) => getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) / 2 : 0, 
-            (q) => getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) / 2 : 0, 
-            (q) => getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(4) * 0.25 + getQ(6) * 0.25) / 2 : 0, 
-            (q) => getQ(5) > 0 ? (getQ(5) * 0.25 + getQ(4) * 0.25 + getQ(6) * 0.25 + getQ(2) * 0.25) / 2 : 0, 
-            (q) => (getQ(9) * 1) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(8) * 1) / 2, 
-            (q) => (getQ(11) * 1) / 2, 
-            (q) => (getQ(11) * 0.8 + getQ(1) * 0.1 + getQ(17) * 0.1) / 2, 
-            (q) => (getQ(11) * 0.8 + getQ(1) * 0.1 + getQ(17) * 0.1) / 2, 
-            (q) => (getQ(1) * 0.75 + getQ(17) * 0.25) / 2, 
-            (q) => (getQ(11) * 0.5 + getQ(1) * 0.3 + getQ(8) * 0.1 + getQ(19) * 0.1) / 2, 
-            (q) => (getQ(11) * 0.5 + getQ(1) * 0.3 + getQ(8) * 0.1 + getQ(19) * 0.1) / 2, 
-            (q) => (getQ(11) * 0.5 + getQ(1) * 0.3 + getQ(8) * 0.1 + getQ(19) * 0.1) / 2, 
-            (q) => (getQ(11) * 0.5 + getQ(1) * 0.3 + getQ(8) * 0.1 + getQ(19) * 0.1) / 2, 
-            (q) => (getQ(1) * 0.5 + getQ(17) * 0.5) / 2, 
-            (q) => (getQ(3) * 0.5 + getQ(4) * 0.5) / 2, 
-            (q) => (getQ(5) * 0.5 + getQ(8) * 0.5) / 2, 
-            (q) => (getQ(5) * 1) / 2, 
-            (q) => (getQ(5) * 0.5 + getQ(6) * 0.5) / 2, 
-            (q) => (getQ(4) * 0.2 + getQ(5) * 0.8) / 2, 
-            (q) => (getQ(1) * 0.5 + getQ(8) * 0.5) / 2, 
-            (q) => (getQ(11) * 1) / 2, 
-            (q) => (getQ(8) * 0.2 + getQ(2) * 0.2 + getQ(3) * 0.2 + getQ(6) * 0.2 + getQ(12) * 0.2) / 2, 
-            (q) => (getQ(1) * 0.5 + getQ(8) * 0.5) / 2, 
-            (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, 
-            (q) => (getQ(2) * 1) / 2, 
-            (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, 
-            (q) => (getQ(11) * 1) / 2, 
-            (q) => getQ(12) > 0 ? (getQ(12) * 1) / 2 : 0, 
-            (q) => getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) / 2 : 0, 
-            (q) => getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) / 2 : 0, 
-            (q) => (getQ(13) * 1) / 2, 
-            (q) => (getQ(13) * 1) / 2, 
-            (q) => (getQ(14) * 1) / 2, 
-            (q) => (getQ(14) * 1) / 2, 
-            (q) => (getQ(14) * 1) / 2, 
-            (q) => (getQ(14) * 1) / 2, 
-            (q) => (getQ(14) * 1) / 2, 
-            (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, 
-            (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2
+            (q) => (getQ(17) * 1) / 2, // 1. Regolazione sedile (B19)
+            (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, // 2. Regolazione specchi (B20, B19)
+            (q) => (getQ(17) * 1) / 2, // 3. Posizione mani (B19)
+            (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, // 4. Volante aperta (B3, B10, B11)
+            (q) => (getQ(1) * 0.4 + getQ(8) * 0.3 + getQ(9) * 0.3) / 2, // 5. Volante media (B3, B10, B11)
+            (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, // 6. Volante stretta (B3, B10, B11)
+            (q) => (getQ(1) * 0.6 + getQ(8) * 0.2 + getQ(9) * 0.2) / 2, // 7. Volante svolta (B3, B10, B11)
+            (q) => (getQ(0) * 1) / 2, // 8. Visione centrale (B2)
+            (q) => (getQ(0) * 1) / 2, // 9. Visione periferica (B2)
+            (q) => (getQ(0) * 1) / 2, // 10. Dinamicità sguardo (B2)
+            (q) => (getQ(0) * 1) / 2, // 11. Anticipazione visiva (B2)
+            (q) => (getQ(0) * 0.5 + getQ(8) * 0.5) / 2, // 12. Sguardo curva dx (B2, B10)
+            (q) => (getQ(0) * 0.5 + getQ(9) * 0.5) / 2, // 13. Sguardo curva sx (B2, B11)
+            (q) => (getQ(18) * 0.4 + getQ(10) * 0.1 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(15) * 0.1) / 2, // 14. Sequenza rti (B20, B12, B2, B9, B17)
+            (q) => (getQ(2) > 0 ? (getQ(2) * 0.5 + getQ(0) * 0.5) : 0) / 2, // 15. Sensibilità acceleratore (SE B4>0; B4, B2)
+            (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.5) : 0) / 2, // 16. Sensibilità freno (SE B5>0; B5, B2)
+            (q) => (getQ(2) > 0 ? (getQ(17) * 1) : 0) / 2, // 17. Passaggio freno (SE B4>0; B19)
+            (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(15) * 0.25) : 0) / 2, // 18. Frenata precisione (SE B5>0; B5, B2, B17)
+            (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(16) * 0.25) : 0) / 2, // 19. Frenata pericolo (SE B5>0; B5, B2, B18)
+            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, // 20. Uso piede frizione (SE B7>0; B7, B19)
+            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, // 21. Piede passaruota (SE B7>0; B7, B19)
+            (q) => (getQ(5) > 0 ? (getQ(5) * 1) : 0) / 2, // 22. Ricerca innesto (SE B7>0; B7)
+            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, // 23. Tenuta pedale (SE B7>0; B7, B19)
+            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, // 24. Combinazione gas frizione (SE B7>0; B7, B4)
+            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, // 25. Partenza pianura (SE B7>0; B7, B4)
+            (q) => (getQ(6) * 1) / 2, // 26. Partenza salita (B8)
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, // 27. Impostazioni mano cambio (SE B6>0; B6, B19)
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.3) : 0) / 2, // 28. Incremento 2-3 (SE B6>0; B6, B7)
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.2 + getQ(3) * 0.1) : 0) / 2, // 29. Decremento 3-2 (SE B6>0; B6, B7, B5)
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.25 + getQ(7) * 0.25) : 0) / 2, // 30. Seq completa incremento (SE B6>0; B6, B7, B9)
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.2 + getQ(3) * 0.2 + getQ(7) * 0.1) : 0) / 2, // 31. Seq completa scalata (SE B6>0; B6, B7, B5, B9)
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, // 32. Preparazione cambiata (SE B6>0; B6, B19)
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) : 0) / 2, // 33. Incremento equilibrio (SE B6>0; B6, B3)
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(3) * 0.25 + getQ(5) * 0.25) : 0) / 2, // 34. Scalata tenuta freno (SE B6>0; B6, B5, B7)
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.25 + getQ(3) * 0.25 + getQ(5) * 0.25 + getQ(1) * 0.25) : 0) / 2, // 35. Coordinazione (SE B6>0; B6, B5, B7, B3)
+            (q) => (getQ(9) * 1) / 2, // 36. Svolta sx doppio senso (B11)
+            (q) => (getQ(9) * 1) / 2, // 37. Svolta sx senso unico (B11)
+            (q) => (getQ(8) * 1) / 2, // 38. Svolta dx (B10)
+            (q) => (getQ(10) * 1) / 2, // 39. Rotatorie (B12)
+            (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, // 40. Preselezione incrocio (B12, B2, B18)
+            (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, // 41. Rispetto segnaletica (B12, B2, B18)
+            (q) => (getQ(0) * 0.75 + getQ(16) * 0.25) / 2, // 42. Adattamento buio (B2, B18)
+            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, // 43. Veicoli opposti (B12, B2, B9, B21)
+            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, // 44. Superamento ostacoli (B12, B2, B9, B21)
+            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, // 45. Fermate bus (B12, B2, B9, B21)
+            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, // 46. Attraversamenti pedonali (B12, B2, B9, B21)
+            (q) => (getQ(0) * 0.5 + getQ(16) * 0.5) / 2, // 47. Guida proattiva (B2, B18)
+            (q) => (getQ(2) * 0.5 + getQ(3) * 0.5) / 2, // 48. Adattamento velocità (B4, B5)
+            (q) => (getQ(4) * 0.5 + getQ(7) * 0.5) / 2, // 49. Uso cambio eco (B6, B9)
+            (q) => (getQ(4) * 1) / 2, // 50. Comprensione punto cambiata (B6)
+            (q) => (getQ(4) * 0.5 + getQ(5) * 0.5) / 2, // 51. Inerzia eco roll (B6, B7)
+            (q) => (getQ(3) * 0.2 + getQ(4) * 0.8) / 2, // 52. Freno motore cut-off (B5, B6)
+            (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, // 53. Distanze sicurezza (B2, B9)
+            (q) => (getQ(10) * 1) / 2, // 54. Ingresso accelerazione (B12)
+            (q) => (getQ(7) * 0.2 + getQ(1) * 0.2 + getQ(2) * 0.2 + getQ(5) * 0.2 + getQ(11) * 0.2) / 2, // 55. Inserimento traffico (B9, B3, B4, B7, B13)
+            (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, // 56. Valutazione distanze (B2, B9)
+            (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, // 57. Uso specchi sorpasso (B20, B21)
+            (q) => (getQ(1) * 1) / 2, // 58. Gestione volante sorpasso (B3)
+            (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, // 59. Rientro sorpasso (B20, B21)
+            (q) => (getQ(10) * 1) / 2, // 60. Uscita decelerazione (B12)
+            (q) => (getQ(12) > 0 ? (getQ(12) * 1) : 0) / 2, // 61. Retromarcia rettilineo (SE B14>0; B14)
+            (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) : 0) / 2, // 62. Retromarcia L sx (SE B14>0; B14, B11)
+            (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) : 0) / 2, // 63. Retromarcia L dx (SE B14>0; B14, B10)
+            (q) => (getQ(13) * 1) / 2, // 64. Inversione avanti (B15)
+            (q) => (getQ(13) * 1) / 2, // 65. Inversione retro (B15)
+            (q) => (getQ(14) * 1) / 2, // 66. Parcheggi parallelo dx (B16)
+            (q) => (getQ(14) * 1) / 2, // 67. Parcheggi parallelo sx (B16)
+            (q) => (getQ(14) * 1) / 2, // 68. Parcheggio pendenza (B16)
+            (q) => (getQ(14) * 1) / 2, // 69. Parcheggio pettine (B16)
+            (q) => (getQ(14) * 1) / 2, // 70. Parcheggio spina (B16)
+            (q) => (getQ(19) * 1) / 2, // 71. Controllo carta circolazione (B21)
+            (q) => (getQ(19) * 1) / 2, // 72. Controllo pneumatici (B21)
+            (q) => (getQ(19) * 1) / 2, // 73. Controllo sterzo (B21)
+            (q) => (getQ(19) * 1) / 2, // 74. Controllo livelli (B21)
+            (q) => (getQ(19) * 1) / 2, // 75. Controllo dispositivi (B21)
+            (q) => (getQ(19) * 1) / 2, // 76. Controllo chiusura (B21)
+            (q) => (getQ(19) * 1) / 2  // 77. Operazioni discesa (B21)
         ];
+        // --- FINE COSA FARE 1 ---
 
         DETAILED_CRITERIA.forEach((criterion, index) => {
             try {
@@ -422,40 +420,32 @@
             }
         });
 
-        const competencyAreas = {};
+        // --- INIZIO MODIFICA COSA FARE 2 ---
+        // Oggetti separati per i punteggi 0-50 (per il calcolo) e 0-5 (per la visualizzazione)
+        const competencyAreas_0_50 = {};
+        const competencyAreas_0_5 = {};
         let totalScore_0_500 = 0;
 
         COMPETENCY_AREAS.forEach(area => {
-            const areaScore = calculateAreaScore(area.criteria, calculatedScores);
-            competencyAreas[area.name] = areaScore;
-            totalScore_0_500 += areaScore;
+            // calculateAreaScore ora restituisce un oggetto
+            const { score_0_50, average_0_5_display } = calculateAreaScore(area.criteria, calculatedScores);
+            
+            competencyAreas_0_50[area.name] = score_0_50;
+            competencyAreas_0_5[area.name] = average_0_5_display;
+            
+            totalScore_0_500 += score_0_50;
         });
 
-        return { calculatedScores, competencyAreas, totalScore_0_500 };
+        return { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 };
+        // --- FINE MODIFICA COSA FARE 2 ---
     }
 
-    // --- FUNZIONI API GEMINI RIMOSSE ---
 
-    // --- NUOVA LOGICA DI PAGINAZIONE E STORAGE ---
+    // --- FUNZIONI DI GESTIONE PAGINA (Single Page App) ---
 
-    document.addEventListener('DOMContentLoaded', initPage);
-
+    // Chiamata all'avvio
     function initPage() {
-        // --- MODIFICA ---
-        // Rimuoviamo tutta la logica 'hash'. Mostra sempre la home page all'inizio.
-        // const hash = window.location.hash.substring(1); // Rimuove #
-        // if (hash) {
-        //     // Siamo in una pagina di calcolo
-        //     currentLessonId = hash;
-        //     showCalculatorPage();
-        //     loadLesson(currentLessonId);
-        // } else {
-        //     // Siamo sulla landing page
-        //     showLandingPage();
-        //     loadSavedLessonsList();
-        // }
         showHomeView();
-        // --- FINE MODIFICA ---
     }
 
     function showHomeView() {
@@ -473,80 +463,84 @@
 
     function startNewLesson() {
         const studentNameInput = document.getElementById('student-name-input');
-        const errorEl = document.getElementById('landing-error');
         const studentName = studentNameInput.value.trim();
-
-        if (!studentName) {
-            errorEl.textContent = "Per favore, inserisci nome e cognome dell'allievo.";
+        const errorEl = document.getElementById('landing-error');
+        
+        if (studentName.length < 3) {
+            errorEl.textContent = "Il nome deve essere di almeno 3 caratteri.";
             errorEl.classList.remove('hidden');
             return;
         }
         errorEl.classList.add('hidden');
 
-        const lessonId = 'lesson_' + Date.now();
-        
-        // Crea i punteggi di default
-        const defaultScores = {};
+        const lessonId = `lesson_${new Date().getTime()}`;
+        const defaultQuickScores = {};
         QUICK_CRITERIA.forEach(name => {
-            defaultScores[name] = 5; // Default a 5
+            defaultQuickScores[name] = 5;
         });
 
         const lessonData = {
+            id: lessonId,
             studentName: studentName,
-            scores: defaultScores,
             notes: "",
+            quickScores: defaultQuickScores,
             isLocked: false
         };
 
-        // Salva i dati di default e apre la nuova scheda
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
         
-        // --- MODIFICA ---
-        // Rimuove l'apertura di una nuova scheda e mostra la vista calcolatore
-        // const baseUrl = window.location.href.split('#')[0];
-        // window.open(baseUrl + '#' + lessonId, '_blank');
+        // Mostra la vista calcolatore per la nuova lezione
         showCalculatorPage(lessonId);
-        // --- FINE MODIFICA ---
-        
-        // Non è più necessario ricaricare la lista qui
-        // loadSavedLessonsList();
-        // studentNameInput.value = "";
     }
 
     function loadSavedLessonsList() {
         const listContainer = document.getElementById('saved-lessons-list');
-        listContainer.innerHTML = ''; // Pulisce la lista
-        let hasLessons = false;
-
+        listContainer.innerHTML = '';
+        
+        const lessons = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (key.startsWith('lesson_')) {
-                hasLessons = true;
-                const data = JSON.parse(localStorage.getItem(key));
-                const status = data.isLocked 
-                    ? '<span class="text-red-600 font-semibold">Bloccato</span>' 
-                    : '<span class="text-green-600 font-semibold">In corso</span>';
-                
-                const itemEl = document.createElement('div');
-                itemEl.className = 'saved-lesson-item';
-                itemEl.innerHTML = `
-                    <div>
-                        <a href="#" class="font-medium text-blue-600 hover:underline" onclick="openLesson('${key}'); return false;">${data.studentName}</a>
-                        <span class="text-sm ml-2">(${status})</span>
-                    </div>
-                    <button class="delete-btn" title="Elimina" onclick="deleteLesson('${key}')">&times;</button>
-                `;
-                listContainer.appendChild(itemEl);
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    if (data && data.studentName) {
+                        lessons.push(data);
+                    }
+                } catch (e) {
+                    console.warn(`Impossibile parsare i dati per ${key}`);
+                }
             }
         }
 
-        if (!hasLessons) {
+        if (lessons.length === 0) {
             listContainer.innerHTML = '<p class="text-gray-500">Nessuna valutazione salvata.</p>';
+            return;
         }
+        
+        // Ordina per nome
+        lessons.sort((a, b) => a.studentName.localeCompare(b.studentName));
+
+        lessons.forEach(data => {
+            const key = data.id;
+            const status = data.isLocked 
+                ? '<span class="text-red-600 font-medium">Archiviata</span>' 
+                : '<span class="text-green-600">In corso</span>';
+                
+            const itemEl = document.createElement('div');
+            itemEl.className = 'saved-lesson-item';
+            itemEl.innerHTML = `
+                <div>
+                    <a href="#" class="font-medium text-blue-600 hover:underline" onclick="openLesson('${key}'); return false;">${data.studentName}</a>
+                    <span class="text-sm ml-2">(${status})</span>
+                </div>
+                <button class="delete-btn" title="Elimina" onclick="deleteLesson('${key}')">&times;</button>
+            `;
+            listContainer.appendChild(itemEl);
+        });
     }
 
     function deleteLesson(lessonId) {
-        // Usa un semplice prompt per conferma (sostituirebbe il confirm bloccato)
+        // Usa un semplice prompt per conferma (più affidabile di confirm())
         const check = prompt(`Sei sicuro di voler eliminare questa valutazione? Digita "ELIMINA" per confermare.`);
         if (check === 'ELIMINA') {
             localStorage.removeItem(lessonId);
@@ -554,135 +548,117 @@
         }
     }
 
-    // --- NUOVA FUNZIONE ---
     // Apre la vista calcolatore per una lezione esistente
     function openLesson(lessonId) {
         showCalculatorPage(lessonId);
     }
-    // --- FINE NUOVA FUNZIONE ---
 
     function loadLesson(lessonId) {
-        // --- MODIFICA ---
-        // Imposta l'ID corrente qui, perché initPage non lo fa più
         currentLessonId = lessonId;
-        // --- FINE MODIFICA ---
         
         const dataString = localStorage.getItem(lessonId);
         if (!dataString) {
-            alert("Errore: Lezione non trovata.");
-            window.location.href = window.location.pathname; // Torna alla home
+            alert("Errore: Dati lezione non trovati.");
+            showHomeView();
             return;
         }
-
-        const data = JSON.parse(dataString);
         
-        quickScores = data.scores;
-        isPageLocked = data.isLocked;
+        const lessonData = JSON.parse(dataString);
+        quickScores = lessonData.quickScores || {};
         
-        document.getElementById('student-name-display').textContent = data.studentName;
-        document.getElementById('lesson-notes').value = data.notes;
+        // Popola i campi
+        document.getElementById('student-name-display').textContent = lessonData.studentName;
+        document.getElementById('lesson-notes').value = lessonData.notes || "";
         
-        // Aggiunge il listener per le note per l'auto-salvataggio
-        document.getElementById('lesson-notes').addEventListener('input', () => saveLessonData(false));
-
-        // Renderizza i componenti UI con i dati caricati
+        // Renderizza i criteri e i calcoli
         renderQuickCriteria(quickScores);
         
-        // Calcola e renderizza i punteggi derivati
-        const { calculatedScores, competencyAreas, totalScore_0_500 } = calculateScores(quickScores);
-        renderDetailedSummary(calculatedScores);
-        renderCompetencyAreas(competencyAreas, totalScore_0_500);
+        // --- MODIFICA COSA FARE 2: Passa entrambi gli oggetti score ---
+        const scores = calculateScores(quickScores);
+        renderDetailedSummary(scores.calculatedScores);
+        renderCompetencyAreas(scores.competencyAreas_0_50, scores.competencyAreas_0_5, scores.totalScore_0_500);
+        // --- FINE MODIFICA ---
 
-        if (isPageLocked) {
-            lockPage();
-        }
-    }
-
-    function saveLessonData(isLocking) {
-        if (isPageLocked) return; // Non salvare se la pagina è già bloccata
-
-        if (isLocking) {
-             const check = prompt(`Sei sicuro di voler bloccare e archiviare questa valutazione? Non potrai più modificarla. Digita "BLOCCA" per confermare.`);
-             if (check !== 'BLOCCA') {
-                 return; // Annulla il blocco
-             }
-             isPageLocked = true;
-        }
-        
-        const currentData = {
-            studentName: document.getElementById('student-name-display').textContent,
-            scores: quickScores,
-            notes: document.getElementById('lesson-notes').value,
-            isLocked: isPageLocked
-        };
-
-        localStorage.setItem(currentLessonId, JSON.stringify(currentData));
-
-        if (isPageLocked) {
+        // Gestisci lo stato bloccato
+        if (lessonData.isLocked) {
             lockPage();
         } else {
-             // Feedback visivo di salvataggio (opzionale)
-            const statusEl = document.getElementById('lock-status');
-            statusEl.innerHTML = '<span class="text-blue-600 font-bold">Salvato!</span>';
-            setTimeout(() => {
-                 if(!isPageLocked) {
-                    statusEl.innerHTML = '<span class="text-yellow-600 font-bold">In corso (Salvataggio automatico)</span>';
-                 }
-            }, 1500);
+            unlockPage();
         }
     }
 
-    function lockPage() {
-        isPageLocked = true;
-        
-        // Aggiorna stato
-        document.getElementById('lock-status').innerHTML = '<span class="text-red-600 font-bold">Archiviato (Bloccato)</span>';
-        
-        // Disabilita bottoni
-        document.getElementById('lock-lesson-btn').disabled = true;
-        document.getElementById('lock-lesson-btn').textContent = "Bloccato";
+    function saveLessonData(isLocking = false) {
+        if (!currentLessonId) return;
 
-        // Disabilita note
-        document.getElementById('lesson-notes').disabled = true;
+        const currentDataString = localStorage.getItem(currentLessonId);
+        if (!currentDataString) return;
         
-        // Disabilita tutti gli slider
-        const sliders = document.querySelectorAll('.score-slider');
-        sliders.forEach(slider => {
-            slider.disabled = true;
-        });
-    }
+        const lessonData = JSON.parse(currentDataString);
 
-    function closeWindow() {
-        window.close();
+        if (lessonData.isLocked) return; // Non salvare se già bloccato
+        
+        lessonData.notes = document.getElementById('lesson-notes').value;
+        lessonData.quickScores = quickScores;
+        
+        if (isLocking) {
+            const check = prompt(`Sei sicuro di voler bloccare e archiviare questa valutazione? Non potrai più modificarla.\nDigita "BLOCCA" per confermare.`);
+            if (check === 'BLOCCA') {
+                lessonData.isLocked = true;
+                localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
+                lockPage();
+            }
+        } else {
+            // Salva senza bloccare (salvataggio automatico)
+            localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
+        }
     }
     
-    // --- NUOVA FUNZIONE ---
-    // Sostituisce closeWindow()
+    // Torna alla lista
     function goBackToList() {
         showHomeView();
     }
-    // --- FINE NUOVA FUNZIONE ---
+    
+    function lockPage() {
+        document.getElementById('lock-status').innerHTML = 'Stato: <span class="text-red-600 font-medium">Archiviata (Sola lettura)</span>';
+        document.getElementById('lock-lesson-btn').disabled = true;
+        document.getElementById('lesson-notes').disabled = true;
+        
+        document.querySelectorAll('.score-slider').forEach(slider => {
+            slider.disabled = true;
+        });
+    }
+    
+    function unlockPage() {
+        document.getElementById('lock-status').innerHTML = 'Stato: <span class="text-green-600">In corso...</span>';
+        document.getElementById('lock-lesson-btn').disabled = false;
+        document.getElementById('lesson-notes').disabled = false;
+        
+        document.querySelectorAll('.score-slider').forEach(slider => {
+            slider.disabled = false;
+        });
+    }
 
-    // --- FUNZIONI DI RENDERIZZAZIONE UI (MODIFICATE) ---
+    // --- FUNZIONI DI RENDERIZZAZIONE UI ---
 
     function renderQuickCriteria(scores) {
         const container = document.getElementById('quick-criteria-container');
         container.innerHTML = QUICK_CRITERIA.map((criterion, index) => {
-            const score = scores[criterion] || 5; // Carica il punteggio salvato o default 5
+            const value = scores[criterion] || 5; // Default a 5 se non presente
             return `
             <div class="space-y-1 p-3 bg-gray-50 rounded-lg shadow-inner">
                 <label for="quick-slider-${index}" class="block text-sm font-semibold text-gray-700">${index + 1}. ${criterion}</label>
-                <p id="quick-desc-${index}" class="text-xs h-8 text-gray-500 overflow-hidden">${SCORE_10_INTERPRETATION[score]}</p>
+                <p id="quick-desc-${index}" class="text-xs h-8 text-gray-500 overflow-hidden">${SCORE_10_INTERPRETATION[value]}</p>
                 <div class="flex items-center space-x-3">
-                    <input type="range" min="0" max="10" value="${score}" id="quick-slider-${index}" data-name="${criterion}" data-index="${index}" class="score-slider flex-grow" oninput="updateQuickScore(event)">
-                    <span id="quick-value-${index}" class="text-lg font-bold text-indigo-600 w-8 text-right">${score}</span>
+                    <input type="range" min="0" max="10" value="${value}" id="quick-slider-${index}" data-name="${criterion}" data-index="${index}" class="score-slider flex-grow" oninput="updateQuickScore(event)" onchange="saveLessonData(false)">
+                    <span id="quick-value-${index}" class="text-lg font-bold text-indigo-600 w-8 text-right">${value}</span>
                 </div>
             </div>
         `}).join('');
     }
 
+    // Chiamato quando uno slider 0-10 viene mosso
     function updateQuickScore(event) {
-        if (isPageLocked) return; // Non fare nulla se bloccato
+        if (event.target.tagName !== 'INPUT' || event.target.type !== 'range') return;
         
         const slider = event.target;
         const name = slider.getAttribute('data-name');
@@ -694,13 +670,11 @@
         
         quickScores[name] = value;
 
-        // Ricalcola tutto e salva
-        const { calculatedScores, competencyAreas, totalScore_0_500 } = calculateScores(quickScores);
+        // --- MODIFICA COSA FARE 2: Passa entrambi gli oggetti score ---
+        const { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 } = calculateScores(quickScores);
         renderDetailedSummary(calculatedScores);
-        renderCompetencyAreas(competencyAreas, totalScore_0_500);
-        
-        // Auto-salva
-        saveLessonData(false);
+        renderCompetencyAreas(competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500);
+        // --- FINE MODIFICA ---
     }
 
     function renderDetailedSummary(detailedScores) {
@@ -723,7 +697,7 @@
 
                 html += `
                     <div class="flex justify-between items-center text-sm">
-                        <span class="text-gray-700 truncate" title="${criterion}">${criterion}</span>
+                        <span class="text-gray-700 truncate">${criterion}</span>
                         <span class="font-bold text-right ml-2 p-1 px-2 rounded-full text-xs ${interpretation.color}">
                             ${score} / 5
                         </span>
@@ -737,27 +711,35 @@
         container.innerHTML = html;
     }
 
-    function renderCompetencyAreas(competencyAreas, totalScore) {
+    /**
+     * MODIFICA COSA FARE 2:
+     * Accetta i punteggi 0-50 (per i colori) e 0-5 (per la visualizzazione)
+     */
+    function renderCompetencyAreas(competencyAreas_0_50, competencyAreas_0_5, totalScore) {
         const container = document.getElementById('competency-summary');
         
         container.innerHTML = COMPETENCY_AREAS.map(area => {
-            const score = competencyAreas[area.name] || 0;
+            const score_0_50 = competencyAreas_0_50[area.name] || 0;
+            const score_0_5 = competencyAreas_0_5[area.name] || 0;
             
+            // La logica del colore si basa ancora sul punteggio 0-50
             let color = 'bg-gray-200 text-gray-800';
-            if (score >= 40) color = 'bg-green-600 text-white';
-            else if (score >= 30) color = 'bg-yellow-400 text-gray-800';
+            if (score_0_50 >= 40) color = 'bg-green-600 text-white';
+            else if (score_0_50 >= 30) color = 'bg-yellow-400 text-gray-800';
             else color = 'bg-red-400 text-white';
 
+            // La visualizzazione usa il punteggio 0-5
             return `
                 <div class="flex justify-between items-center p-2 rounded-lg border border-gray-100 bg-white shadow-sm">
                     <span class="font-medium text-gray-700">${area.name}</span>
                     <span class="px-3 py-1 text-sm font-bold rounded-full ${color}">
-                        ${score} / 50
+                        ${score_0_5} / 5
                     </span>
                 </div>
             `;
         }).join('');
 
+        // Il totale è ancora basato sulla somma dei 0-50
         document.getElementById('total-score-500').textContent = `${totalScore} / 500`;
     }
 
@@ -767,12 +749,13 @@
     window.loadSavedLessonsList = loadSavedLessonsList;
     window.deleteLesson = deleteLesson;
     window.saveLessonData = saveLessonData;
-    // window.closeWindow = closeWindow; // Vecchia funzione
-    window.goBackToList = goBackToList; // Nuova funzione
-    window.openLesson = openLesson; // Nuova funzione
+    window.goBackToList = goBackToList;
+    window.openLesson = openLesson;
+    
+    // Avvia l'applicazione
+    initPage();
 
 </script>
 </body>
 </html>
-
 
