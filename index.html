@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 1. Titolo aggiornato -->
     <title>Registro Valutazioni Guida</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -34,6 +33,10 @@
             opacity: 0.9;
             transition: opacity .2s;
             border-radius: 5px;
+            /* FIX MOBILE: Questa riga impedisce al browser di scorrere la pagina 
+              quando si trascina lo slider verticalmente su smartphone.
+            */
+            touch-action: none;
         }
         .score-slider:hover { opacity: 1; }
         .score-slider::-webkit-slider-thumb {
@@ -256,7 +259,6 @@
         1: "Grave errore → Tentativo fallito, comportamento inadeguato.",
         2: "Molto insicuro → Errori gravi, necessità di intervento.",
         3: "Insicuro → Errori evidenti, esecuzione incerta.",
-        // FIX: Rimosso il punto (.) dopo il 4, era un errore di sintassi
         4: "Migliorabile → Errori non gravi, ma guida imprecisa.",
         5: "Quasi sufficiente → Autonomia parziale, migliorabile.",
         6: "Sufficiente → Controllo adeguato, ma con margini di miglioramento.",
@@ -879,3 +881,4 @@
 </script>
 </body>
 </html>
+
