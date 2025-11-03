@@ -175,9 +175,11 @@
 
     <!-- VALUTAZIONE RAPIDA (1) -->
     <div id="valuation-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">1. Valutazione Rapida (20 Criteri, Scala 0-10)</h2>
+        <!-- Titolo Sezione 1 aggiornato -->
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">1. Valutazione Rapida (20 Criteri)</h2>
+        <!-- Descrizione Sezione 1 aggiornata -->
         <p class="text-sm text-gray-600 mb-4">
-            Assegna un punteggio da 0 a 10. La descrizione di supporto appare sotto il nome del criterio.
+            Assegna una valutazione. La descrizione di supporto appare sotto il nome del criterio.
         </p>
 
         <div id="quick-criteria-container" class="grid lg:grid-cols-3 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -253,6 +255,12 @@
     let currentLessonId = null;
     let quickScores = {}; 
     
+    // Mappatura Emoticon (Richiesta 1 - INVERTITE 9 e 10)
+    const EMOJI_INTERPRETATION = {
+        0: "😶", 1: "😱", 2: "😨", 3: "😣", 4: "🤔",
+        5: "🧐", 6: "🙂", 7: "😊", 8: "😄", 9: "🤩", 10: "😎"
+    };
+
     // 1. Mappatura Descrizioni 0-10
     const SCORE_10_INTERPRETATION = {
         0: "Non ancora spiegato → L'argomento o la manovra non è stata ancora trattata.",
@@ -524,7 +532,8 @@
             notes: "",
             moduloSvolto: "nessuno", // 6. Aggiunta default modulo
             quickScores: defaultQuickScores,
-            isLocked: false
+            isLocked: false,
+            finalScore: null // 5. Aggiunto campo per punteggio finale
         };
 
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
@@ -621,6 +630,12 @@
             const status = data.isLocked 
                 ? '<span class="text-red-600 font-medium">Archiviata</span>' 
                 : '<span class="text-green-600">In corso</span>';
+            
+            // 5. Mostra il punteggio finale se bloccato
+            let scoreDisplay = '';
+            if (data.isLocked && data.finalScore != null) {
+                scoreDisplay = `<span class="text-sm text-indigo-700 font-bold ml-2">(${data.finalScore}/500)</span>`;
+            }
                 
             const itemEl = document.createElement('div');
             itemEl.className = 'saved-lesson-item';
@@ -631,11 +646,15 @@
                 minute: '2-digit'
             }) : "N/D";
             
+            // 5. Aggiunto scoreDisplay
             itemEl.innerHTML = `
                 <div class="flex-grow min-w-0"> <!-- Container flessibile per nome -->
-                    <a href="#" class="font-medium text-blue-600 hover:underline truncate block" onclick="openLesson('${key}'); return false;" title="${data.studentName}">
-                        ${data.studentName}
-                    </a>
+                    <div class="flex items-center">
+                        <a href="#" class="font-medium text-blue-600 hover:underline truncate" onclick="openLesson('${key}'); return false;" title="${data.studentName}">
+                            ${data.studentName}
+                        </a>
+                        ${scoreDisplay}
+                    </div>
                     <span class="text-sm text-gray-500">${creationTime} - (${status})</span>
                 </div>
                 <button class="delete-btn ml-2" title="Elimina" onclick="deleteLesson('${key}')">&times;</button>
@@ -720,6 +739,11 @@
         
         if (isLocking) {
             if (confirm("Sei sicuro di voler bloccare e archiviare questa valutazione? Non potrai più modificarla.")) {
+                
+                // 5. Calcola e salva il punteggio finale solo al momento del blocco
+                const { totalScore_0_500 } = calculateScores(lessonData.quickScores);
+                lessonData.finalScore = totalScore_0_500;
+                
                 lessonData.isLocked = true;
                 localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
                 lockPage();
@@ -775,7 +799,8 @@
                 <p id="quick-desc-${index}" class="text-xs h-8 text-gray-500 overflow-hidden">${SCORE_10_INTERPRETATION[value]}</p>
                 <div class="flex items-center space-x-3">
                     <input type="range" min="0" max="10" value="${value}" id="quick-slider-${index}" data-name="${criterion}" data-index="${index}" class="score-slider flex-grow" oninput="updateQuickScore(event)" onchange="saveLessonData(false)">
-                    <span id="quick-value-${index}" class="text-lg font-bold text-indigo-600 w-8 text-right">${value}</span>
+                    <!-- 1. Sostituito numero con Emoji -->
+                    <span id="quick-value-${index}" class="text-2xl w-10 text-center">${EMOJI_INTERPRETATION[value]}</span>
                 </div>
             </div>
         `}).join('');
@@ -790,7 +815,8 @@
         const index = slider.getAttribute('data-index');
         const value = parseInt(slider.value, 10);
         
-        document.getElementById(`quick-value-${index}`).textContent = value;
+        // 1. Aggiorna con Emoji
+        document.getElementById(`quick-value-${index}`).textContent = EMOJI_INTERPRETATION[value];
         document.getElementById(`quick-desc-${index}`).textContent = SCORE_10_INTERPRETATION[value];
         
         quickScores[name] = value;
@@ -847,11 +873,15 @@
             const score_0_50 = competencyAreas_0_50[area.name] || 0;
             const score_0_5 = competencyAreas_0_5[area.name] || 0;
             
-            // La logica del colore si basa ancora sul punteggio 0-50
-            let color = 'bg-gray-200 text-gray-800';
-            if (score_0_50 >= 40) color = 'bg-green-600 text-white';
-            else if (score_0_50 >= 30) color = 'bg-yellow-400 text-gray-800';
-            else color = 'bg-red-400 text-white';
+            // 4. Logica colori AGGIORNATA per scala 0-5 (come Sezione 3)
+            let color;
+            if (score_0_5 >= 3) {
+                color = 'bg-green-200 text-green-800'; // Verde (3, 4, 5)
+            } else if (score_0_5 >= 2) {
+                color = 'bg-yellow-200 text-yellow-800'; // Giallo (2, 2.x)
+            } else {
+                color = 'bg-red-200 text-red-800'; // Rosso (0, 1, 1.x)
+            }
 
             // MODIFICA VISIVA: Mostra solo il punteggio 0-5 in un cerchio
             return `
