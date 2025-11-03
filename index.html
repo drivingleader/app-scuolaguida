@@ -793,14 +793,22 @@
         const container = document.getElementById('quick-criteria-container');
         container.innerHTML = QUICK_CRITERIA.map((criterion, index) => {
             const value = scores[criterion] != null ? scores[criterion] : 5; // Default a 5 se non presente
+            const description = SCORE_10_INTERPRETATION[value]; // Ottieni la descrizione
             return `
             <div class="space-y-1 p-3 bg-gray-50 rounded-lg shadow-inner">
                 <label for="quick-slider-${index}" class="block text-sm font-semibold text-gray-700">${index + 1}. ${criterion}</label>
-                <p id="quick-desc-${index}" class="text-xs h-8 text-gray-500 overflow-hidden">${SCORE_10_INTERPRETATION[value]}</p>
+                
+                <!-- 2. Testo descrizione nascosto (spostato nel 'title' dell'emoji) -->
+                <p id="quick-desc-${index}" class="text-xs h-8 text-gray-500 overflow-hidden hidden">${description}</p>
+                
                 <div class="flex items-center space-x-3">
+                    <!-- 1. Emoji ingrandita (text-4xl), spostata prima e con 'title' (tooltip) -->
+                    <span id="quick-value-${index}" 
+                          class="text-4xl w-12 text-center cursor-default" 
+                          title="${description}">
+                          ${EMOJI_INTERPRETATION[value]}
+                    </span>
                     <input type="range" min="0" max="10" value="${value}" id="quick-slider-${index}" data-name="${criterion}" data-index="${index}" class="score-slider flex-grow" oninput="updateQuickScore(event)" onchange="saveLessonData(false)">
-                    <!-- 1. Sostituito numero con Emoji -->
-                    <span id="quick-value-${index}" class="text-2xl w-10 text-center">${EMOJI_INTERPRETATION[value]}</span>
                 </div>
             </div>
         `}).join('');
@@ -815,9 +823,17 @@
         const index = slider.getAttribute('data-index');
         const value = parseInt(slider.value, 10);
         
-        // 1. Aggiorna con Emoji
-        document.getElementById(`quick-value-${index}`).textContent = EMOJI_INTERPRETATION[value];
-        document.getElementById(`quick-desc-${index}`).textContent = SCORE_10_INTERPRETATION[value];
+        const description = SCORE_10_INTERPRETATION[value]; // Ottieni la nuova descrizione
+        const emojiEl = document.getElementById(`quick-value-${index}`);
+        
+        // 1. Aggiorna l'emoji
+        emojiEl.textContent = EMOJI_INTERPRETATION[value];
+        
+        // 2. Aggiorna il tooltip (title) dell'emoji
+        emojiEl.setAttribute('title', description);
+        
+        // Aggiorna anche il testo nel <p> nascosto (per coerenza)
+        document.getElementById(`quick-desc-${index}`).textContent = description;
         
         quickScores[name] = value;
 
