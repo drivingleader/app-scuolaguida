@@ -55,72 +55,6 @@
             border-radius: 50%;
         }
         
-        /* Stili Pulsanti */
-        .btn {
-            font-weight: 600;
-            padding: 0.75rem 1.5rem; 
-            border-radius: 0.75rem; 
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .btn-primary {
-            background-color: #007bff; color: white;
-        }
-        .btn-primary:hover { background-color: #0069d9; }
-        
-        .btn-secondary {
-            background-color: #6c757d; color: white;
-        }
-        .btn-secondary:hover { background-color: #5a6268; }
-
-        .btn-danger {
-            background-color: #dc3545; color: white;
-        }
-        .btn-danger:hover { background-color: #c82333; }
-        
-        .btn-outline {
-            background-color: #f8f9fa; color: #495057; border: 1px solid #dee2e6;
-        }
-        .btn-outline:hover { background-color: #e9ecef; }
-
-        .btn:disabled {
-            background-color: #e9ecef; color: #6c757d; cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        /* Stili per la Home Page */
-        .saved-lesson-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 0.5rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .saved-lesson-item:last-child { border-bottom: none; }
-        
-        .date-group-header {
-            font-size: 1.125rem; /* text-lg */
-            font-weight: 600;
-            color: #1f2937; /* text-gray-800 */
-            margin-top: 1.25rem;
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e5e7eb; /* border-gray-200 */
-        }
-        .date-group-header:first-child {
-            margin-top: 0;
-        }
-        
-        .delete-btn {
-            background-color: #fef2f2; color: #ef4444; font-weight: bold;
-            border-radius: 50%; width: 28px; height: 28px;
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid #fecaca;
-            line-height: 1;
-            flex-shrink: 0;
-        }
-        .delete-btn:hover { background-color: #fee2e2; }
-        
         /* 2. Stili per il riquadro firma */
         .signature-pad-canvas {
             border: 2px dashed #d1d5db; /* Bordo tratteggiato */
@@ -128,6 +62,8 @@
             width: 100%;
             height: 200px;
             cursor: crosshair;
+            /* FIX 3: Impedisce lo scorrimento della pagina durante la firma */
+            touch-action: none;
         }
         
         /* Nasconde l'input file, ma lo lascia cliccabile */
@@ -208,8 +144,29 @@
         </div>
     </div>
 
+    <!-- 2. Box Firma SPOSTATO IN ALTO -->
+    <div id="signature-section" class="card">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">2. Firma Allievo/a (per Conferma)</h2>
+        <!-- Contenitore per la firma (Canvas) -->
+        <div id="signature-canvas-container">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Firma qui:</label>
+            <canvas id="signature-pad" class="signature-pad-canvas"></canvas>
+            <div class="flex justify-end gap-2 mt-2">
+                <button id="sig-clear-btn" class="btn btn-outline text-sm py-2 px-3">Pulisci Firma</button>
+            </div>
+            <p id="signature-error" class="text-red-600 text-sm mt-2 hidden"></p>
+        </div>
+        
+        <!-- Contenitore per la firma salvata (Immagine) -->
+        <div id="signature-image-container" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Firma Archiviata:</label>
+            <img id="saved-signature-image" class="border border-gray-300 rounded-lg" alt="Firma salvata">
+        </div>
+    </div>
+
     <!-- VALUTAZIONE RAPIDA (1) -->
     <div id="valuation-section" class="card">
+        <!-- Titolo aggiornato per la nuova numerazione -->
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">1. Valutazione Guida</h2>
         <p class="text-sm text-gray-600 mb-4">
             Assegna una valutazione. La descrizione di supporto appare tenendo premuta l'emoticon.
@@ -257,7 +214,8 @@
 
     <!-- RIEPILOGO AREE DI COMPETENZA (2) -->
     <div id="competency-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">2. Riepilogo Aree di Competenza (Scala 0-5)</h2>
+        <!-- Titolo aggiornato per la nuova numerazione -->
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">3. Riepilogo Aree di Competenza (Scala 0-5)</h2>
         <div id="competency-summary" class="grid md:grid-cols-2 gap-4">
             <!-- I punteggi delle 10 aree saranno qui (ora in scala 0-5) -->
         </div>
@@ -269,8 +227,9 @@
 
     <!-- RIEPILOGO DETTAGLIATO CALCOLATO (3) -->
     <div id="detailed-summary-section" class="card">
+        <!-- Titolo aggiornato per la nuova numerazione -->
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex justify-between items-center">
-            3. Riepilogo Dettagliato
+            4. Riepilogo Dettagliato
             <span class="text-sm font-normal text-indigo-600">(Aggiornato in tempo reale)</span>
         </h2>
         
@@ -279,28 +238,12 @@
         </div>
     </div>
 
-    <!-- 2. Box Firma e Salvataggio -->
-    <div id="signature-and-save-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">4. Conferma Lezione</h2>
+    <!-- Box Salvataggio (ex Box Firma) -->
+    <div id="save-section" class="card">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">5. Conferma Lezione</h2>
         
-        <!-- Contenitore per la firma (Canvas) -->
-        <div id="signature-canvas-container">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Firma Allievo/a:</label>
-            <canvas id="signature-pad" class="signature-pad-canvas"></canvas>
-            <div class="flex justify-end gap-2 mt-2">
-                <button id="sig-clear-btn" class="btn btn-outline text-sm py-2 px-3">Pulisci Firma</button>
-            </div>
-            <p id="signature-error" class="text-red-600 text-sm mt-2 hidden"></p>
-        </div>
-        
-        <!-- Contenitore per la firma salvata (Immagine) -->
-        <div id="signature-image-container" class="hidden">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Firma Archiviata:</label>
-            <img id="saved-signature-image" class="border border-gray-300 rounded-lg" alt="Firma salvata">
-        </div>
-
         <!-- Pulsanti di azione -->
-        <div class="flex flex-col sm:flex-row gap-4 mt-6">
+        <div class="flex flex-col sm:flex-row gap-4 mt-2">
             <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1">
                 Salva
             </button>
@@ -333,7 +276,8 @@
         1: "Grave errore → Tentativo fallito, comportamento inadeguato.",
         2: "Molto insicuro → Errori gravi, necessità di intervento.",
         3: "Insicuro → Errori evidenti, esecuzione incerta.",
-        4. : "Migliorabile → Errori non gravi, ma guida imprecisa.",
+        // FIX 1: Corretto l'errore di sintassi (4. : diventava 4:)
+        4: "Migliorabile → Errori non gravi, ma guida imprecisa.",
         5: "Quasi sufficiente → Autonomia parziale, migliorabile.",
         6: "Sufficiente → Controllo adeguato, ma con margini di miglioramento.",
         7: "Discreto → Guida sicura con qualche imprecisione.",
@@ -1190,4 +1134,5 @@
 </script>
 </body>
 </html>
+
 
