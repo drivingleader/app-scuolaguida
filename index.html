@@ -159,8 +159,8 @@
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl sm:text-2xl font-bold text-gray-900">
-                    <!-- 5. Titolo "Allievo/a" aggiornato -->
-                    Allievo/a: <span id="student-name-display" class="text-blue-600">...</span>
+                    <!-- 1. Rimosso "Allievo/a:" -->
+                    <span id="student-name-display" class="text-blue-600">...</span>
                 </h1>
                 <p id="lock-status" class="text-sm font-medium text-gray-500">
                     Stato: <span class="text-green-600">In corso...</span>
@@ -168,10 +168,12 @@
             </div>
             <div class="flex gap-4">
                 <button id="lock-lesson-btn" onclick="saveLessonData(true)" class="btn-danger">
-                    Blocca e Archivia
+                    <!-- 2. Testo pulsante cambiato -->
+                    Salva
                 </button>
                 <button onclick="goBackToList()" class="btn-secondary">
-                    Torna alla Lista
+                    <!-- 3. Testo pulsante cambiato -->
+                    Indietro
                 </button>
             </div>
         </div>
@@ -179,11 +181,11 @@
 
     <!-- VALUTAZIONE RAPIDA (1) -->
     <div id="valuation-section" class="card">
-        <!-- Titolo Sezione 1 aggiornato -->
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">1. Valutazione Rapida (20 Criteri)</h2>
-        <!-- Descrizione Sezione 1 aggiornata -->
+        <!-- 4. Titolo Sezione 1 aggiornato -->
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">1. Valutazione Guida</h2>
+        <!-- 5. Descrizione Sezione 1 aggiornata -->
         <p class="text-sm text-gray-600 mb-4">
-            Assegna una valutazione. La descrizione di supporto appare sotto il nome del criterio.
+            Assegna una valutazione. La descrizione di supporto appare tenendo premuta l'emoticon.
         </p>
 
         <div id="quick-criteria-container" class="grid lg:grid-cols-3 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -197,7 +199,8 @@
         
         <!-- 6. Moduli Obbligatori (Radio buttons) -->
         <div class="mt-8">
-            <label class="block text-sm font-medium text-gray-700 mb-3">Moduli Obbligatori Svolti (seleziona uno):</label>
+            <!-- 6. Rimosso "(seleziona uno)" -->
+            <label class="block text-sm font-medium text-gray-700 mb-3">Moduli Obbligatori Svolti:</label>
             <div id="moduli-container" class="space-y-3">
                 <!-- Opzione 1: Nessuno -->
                 <div>
@@ -234,15 +237,17 @@
             <!-- I punteggi delle 10 aree saranno qui (ora in scala 0-5) -->
         </div>
         <div class="mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg flex justify-between items-center">
-            <span class="text-lg font-bold text-indigo-800">Punteggio Totale Calcolato (Somma delle 10 Aree 0-50):</span>
+            <!-- 7. Rimosso testo in parentesi -->
+            <span class="text-lg font-bold text-indigo-800">Punteggio Totale Calcolato:</span>
             <span id="total-score-500" class="text-2xl font-extrabold text-indigo-800">0 / 500</span>
         </div>
     </div>
 
     <!-- RIEPILOGO DETTAGLIATO CALCOLATO (3) -->
     <div id="detailed-summary-section" class="card">
+        <!-- 8. Titolo aggiornato -->
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex justify-between items-center">
-            3. Riepilogo Dettagliato Calcolato (77 Criteri, Scala 0-5)
+            3. Riepilogo Dettagliato
             <span class="text-sm font-normal text-indigo-600">(Aggiornato in tempo reale)</span>
         </h2>
         
@@ -971,4 +976,5 @@
 </script>
 </body>
 </html>
+
 
