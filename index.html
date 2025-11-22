@@ -241,7 +241,6 @@
         <div class="grid grid-cols-2 gap-4">
             <div class="col-span-1">
                 <button id="export-btn" class="btn btn-primary w-full">Esporta & Invia a Drive</button>
-                <!-- Indicatore di stato per il backup su Drive -->
                 <p id="drive-status" class="text-xs text-gray-500 mt-2 text-center min-h-[1rem]"></p>
             </div>
             
@@ -366,7 +365,7 @@
 
 <script type="module">
 
-    // *** CONFIGURAZIONE GOOGLE SHEET ***
+    // *** CONFIGURAZIONE GOOGLE SCRIPT PER DRIVE ***
     // Incolla qui l'URL che hai ottenuto distribuendo la Web App su Apps Script
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLHR0J1sbdFoOJizGNnQBllFEVNrB4LxZ5ESlNqQw1Xg3TmR1CyW7HIzD-0vgPns9SzQ/exec";
     
@@ -638,6 +637,12 @@
         renderExamPredictions(defaultPredictions);
         
         showHomeView();
+        
+        // CONTROLLO OFFLINE SYNC (Added)
+        if (navigator.onLine) {
+             checkPendingDriveUpload();
+        }
+        window.addEventListener('online', checkPendingDriveUpload);
     }
 
     function showHomeView() {
@@ -646,7 +651,12 @@
         document.getElementById('student-name-input').value = ""; 
         loadSavedLessonsList(); 
         
-        document.getElementById('export-btn').onclick = exportData;
+        // MODIFIED EXPORT BUTTON
+        const exportBtn = document.getElementById('export-btn');
+        exportBtn.onclick = async () => {
+             await exportData();
+        };
+        
         document.getElementById('import-btn').onclick = () => document.getElementById('import-file-input').click();
     }
 
@@ -932,53 +942,153 @@
             const { totalScore_0_500 } = calculateScores(lessonData.quickScores);
             lessonData.finalScore = totalScore_0_500;
             
-            
-            // --- INTEGRATION POINT: Invia i dati a Google Sheet ---
-            // Questa funzione viene chiamata SOLO quando l'utente conferma di voler salvare.
-            sendDataToGoogleSheet(lessonData, scores.competencyAreas_0_50); 
-            // Nota: ho bisogno di passare anche i punteggi calcolati delle aree.
-            // Per pulizia, li ricalcolo qui o li passo. Li ricalcolo per sicurezza.
-             const scoresForSheet = calculateScores(lessonData.quickScores);
-             sendDataToGoogleSheet(lessonData, scoresForSheet.competencyAreas_0_50);
-             // -----------------------------------------------------
-
             lessonData.isLocked = true;
             localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
             lockPage();
         }
     }
     
-    // --- NUOVA FUNZIONE PER GOOGLE SHEET ---
-    async function sendDataToGoogleSheet(data, areaScores) {
-        // Se l'URL non è impostato, esce silenziosamente o con un log
-        if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "INSERISCI_QUI_IL_TUO_URL") {
-            console.log("URL Script non configurato.");
+    // --- DRIVE SYNC LOGIC (ADDED) ---
+    
+    async function uploadToDrive(exportObj) {
+        const driveStatusEl = document.getElementById('drive-status');
+        driveStatusEl.textContent = "⏳ Caricamento backup su Google Drive...";
+        driveStatusEl.className = "text-xs text-blue-600 mt-2 text-center";
+        
+        try {
+             if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("INSERISCI")) {
+                 throw new Error("URL Script non configurato");
+             }
+
+             await fetch(GOOGLE_SCRIPT_URL, {
+                 method: 'POST',
+                 mode: 'no-cors',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify(exportObj)
+             });
+             
+             driveStatusEl.textContent = "✅ Backup salvato su Google Drive!";
+             driveStatusEl.className = "text-xs text-green-600 mt-2 text-center";
+             
+             localStorage.removeItem('pendingDriveBackup');
+             
+        } catch (error) {
+             console.error("Drive upload failed:", error);
+             localStorage.setItem('pendingDriveBackup', JSON.stringify(exportObj));
+             driveStatusEl.textContent = "⚠️ Offline. In coda per caricamento automatico.";
+             driveStatusEl.className = "text-xs text-orange-600 mt-2 text-center";
+        }
+    }
+    
+    async function checkPendingDriveUpload() {
+        const pendingData = localStorage.getItem('pendingDriveBackup');
+        if (pendingData) {
+            const driveStatusEl = document.getElementById('drive-status');
+            if (driveStatusEl) {
+                 driveStatusEl.textContent = "🔄 Tentativo caricamento coda...";
+            }
+            try {
+                await uploadToDrive(JSON.parse(pendingData));
+            } catch(e) {
+                // Keep pending
+            }
+        }
+    }
+
+    async function exportData() {
+        const statusEl = document.getElementById('import-status');
+        const driveStatusEl = document.getElementById('drive-status');
+        
+        try {
+            const exportObj = {
+                appName: "RegistroValutazioniGuida",
+                exportDate: new Date().toISOString(),
+                lessons: []
+            };
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('lesson_')) {
+                    exportObj.lessons.push(JSON.parse(localStorage.getItem(key)));
+                }
+            }
+            
+            if (exportObj.lessons.length === 0) {
+                 statusEl.textContent = "Nessun dato da esportare.";
+                 statusEl.className = "text-sm mt-3 text-yellow-600";
+                 return;
+            }
+
+            // 1. Local Download
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            const date = new Date().toISOString().split('T')[0];
+            downloadAnchorNode.setAttribute("download", `backup_registro_valutazioni_${date}.json`);
+            document.body.appendChild(downloadAnchorNode); 
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            
+            statusEl.textContent = `Esportate ${exportObj.lessons.length} valutazioni in locale.`;
+            statusEl.className = "text-sm mt-3 text-green-600";
+            
+            // 2. Trigger Drive Upload
+            await uploadToDrive(exportObj);
+
+        } catch (error) {
+            console.error("Errore durante l'esportazione:", error);
+            statusEl.textContent = `Errore: ${error.message}`;
+            statusEl.className = "text-sm mt-3 text-red-600";
+        }
+    }
+    
+    function importData(event) {
+        const file = event.target.files[0];
+        const statusEl = document.getElementById('import-status');
+        
+        if (!file) {
+            statusEl.textContent = "Nessun file selezionato.";
+            statusEl.className = "text-sm mt-3 text-yellow-600";
             return;
         }
 
-        const payload = {
-            nome: data.studentName,
-            totale: data.finalScore,
-            modulo: data.moduloSvolto,
-            note: data.notes,
-            aree: areaScores // Passiamo l'oggetto con i punteggi delle 10 aree
-        };
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                if (!data || data.appName !== "RegistroValutazioniGuida" || !Array.isArray(data.lessons)) {
+                    throw new Error("File non valido o formato non corretto.");
+                }
+                
+                if (confirm(`Attenzione! Stai per importare ${data.lessons.length} valutazioni. Questo SOVRASCRIVERÀ tutti i dati attualmente salvati. Continuare?`)) {
+                    localStorage.clear();
+                    
+                    data.lessons.forEach(lesson => {
+                        if (lesson.id && lesson.studentName) {
+                            localStorage.setItem(lesson.id, JSON.stringify(lesson));
+                        }
+                    });
+                    
+                    statusEl.textContent = `Importate ${data.lessons.length} valutazioni con successo.`;
+                    statusEl.className = "text-sm mt-3 text-green-600";
+                    loadSavedLessonsList(); 
+                } else {
+                    statusEl.textContent = "Importazione annullata.";
+                    statusEl.className = "text-sm mt-3 text-gray-600";
+                }
 
-        try {
-            // Invio in modalità no-cors (standard per form submission semplici verso Google Script)
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-            alert("Dati salvati e inviati al Foglio Google!");
-        } catch (error) {
-            console.error("Errore invio dati:", error);
-            alert("Dati salvati in locale, ma errore nell'invio online.");
-        }
+            } catch (error) {
+                console.error("Errore durante l'importazione:", error);
+                statusEl.textContent = `Errore durante l'importazione: ${error.message}`;
+                statusEl.className = "text-sm mt-3 text-red-600";
+            } finally {
+                event.target.value = null;
+            }
+        };
+        
+        reader.readAsText(file);
     }
 
     function goBackToList() {
@@ -1183,96 +1293,6 @@
 
     function hideTooltip() {
         tooltip.classList.add('hidden');
-    }
-    
-    function exportData() {
-        const statusEl = document.getElementById('import-status');
-        try {
-            const exportObj = {
-                appName: "RegistroValutazioniGuida",
-                exportDate: new Date().toISOString(),
-                lessons: []
-            };
-            
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith('lesson_')) {
-                    exportObj.lessons.push(JSON.parse(localStorage.getItem(key)));
-                }
-            }
-            
-            if (exportObj.lessons.length === 0) {
-                 statusEl.textContent = "Nessun dato da esportare.";
-                 statusEl.className = "text-sm mt-3 text-yellow-600";
-                 return;
-            }
-
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            const date = new Date().toISOString().split('T')[0];
-            downloadAnchorNode.setAttribute("download", `backup_registro_valutazioni_${date}.json`);
-            document.body.appendChild(downloadAnchorNode); 
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
-            
-            statusEl.textContent = `Esportate ${exportObj.lessons.length} valutazioni con successo.`;
-            statusEl.className = "text-sm mt-3 text-green-600";
-
-        } catch (error) {
-            console.error("Errore durante l'esportazione:", error);
-            statusEl.textContent = `Errore durante l'esportazione: ${error.message}`;
-            statusEl.className = "text-sm mt-3 text-red-600";
-        }
-    }
-    
-    function importData(event) {
-        const file = event.target.files[0];
-        const statusEl = document.getElementById('import-status');
-        
-        if (!file) {
-            statusEl.textContent = "Nessun file selezionato.";
-            statusEl.className = "text-sm mt-3 text-yellow-600";
-            return;
-        }
-
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            try {
-                const data = JSON.parse(e.target.result);
-                
-                if (!data || data.appName !== "RegistroValutazioniGuida" || !Array.isArray(data.lessons)) {
-                    throw new Error("File non valido o formato non corretto.");
-                }
-                
-                if (confirm(`Attenzione! Stai per importare ${data.lessons.length} valutazioni. Questo SOVRASCRIVERÀ tutti i dati attualmente salvati. Continuare?`)) {
-                    localStorage.clear();
-                    
-                    data.lessons.forEach(lesson => {
-                        if (lesson.id && lesson.studentName) {
-                            localStorage.setItem(lesson.id, JSON.stringify(lesson));
-                        }
-                    });
-                    
-                    statusEl.textContent = `Importate ${data.lessons.length} valutazioni con successo.`;
-                    statusEl.className = "text-sm mt-3 text-green-600";
-                    loadSavedLessonsList(); 
-                } else {
-                    statusEl.textContent = "Importazione annullata.";
-                    statusEl.className = "text-sm mt-3 text-gray-600";
-                }
-
-            } catch (error) {
-                console.error("Errore durante l'importazione:", error);
-                statusEl.textContent = `Errore durante l'importazione: ${error.message}`;
-                statusEl.className = "text-sm mt-3 text-red-600";
-            } finally {
-                event.target.value = null;
-            }
-        };
-        
-        reader.readAsText(file);
     }
 
     window.updateQuickScore = updateQuickScore;
