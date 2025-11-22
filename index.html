@@ -366,7 +366,6 @@
 <script type="module">
 
     // *** CONFIGURAZIONE GOOGLE SCRIPT PER DRIVE ***
-    // Incolla qui l'URL che hai ottenuto distribuendo la Web App su Apps Script
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLHR0J1sbdFoOJizGNnQBllFEVNrB4LxZ5ESlNqQw1Xg3TmR1CyW7HIzD-0vgPns9SzQ/exec";
     
     let currentLessonId = null;
@@ -638,7 +637,7 @@
         
         showHomeView();
         
-        // CONTROLLO OFFLINE SYNC (Added)
+        // Check for pending Drive upload on load
         if (navigator.onLine) {
              checkPendingDriveUpload();
         }
@@ -651,7 +650,7 @@
         document.getElementById('student-name-input').value = ""; 
         loadSavedLessonsList(); 
         
-        // MODIFIED EXPORT BUTTON
+        // Modified Export Button Listener
         const exportBtn = document.getElementById('export-btn');
         exportBtn.onclick = async () => {
              await exportData();
@@ -659,7 +658,7 @@
         
         document.getElementById('import-btn').onclick = () => document.getElementById('import-file-input').click();
     }
-
+    
     function showCalculatorPage(lessonId) {
         document.getElementById('home-view').classList.add('hidden');
         document.getElementById('calculator-page').classList.remove('hidden');
