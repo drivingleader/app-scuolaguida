@@ -241,6 +241,7 @@
         <div class="grid grid-cols-2 gap-4">
             <div class="col-span-1">
                 <button id="export-btn" class="btn btn-primary w-full">Esporta & Invia a Drive</button>
+                <!-- Indicatore di stato per il backup su Drive -->
                 <p id="drive-status" class="text-xs text-gray-500 mt-2 text-center min-h-[1rem]"></p>
             </div>
             
@@ -366,7 +367,6 @@
 <script type="module">
 
     // *** CONFIGURAZIONE GOOGLE SCRIPT PER DRIVE ***
-    // Ho inserito il TUO URL specifico
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLHR0J1sbdFoOJizGNnQBllFEVNrB4LxZ5ESlNqQw1Xg3TmR1CyW7HIzD-0vgPns9SzQ/exec";
     
     let currentLessonId = null;
@@ -384,7 +384,7 @@
         1: "Grave errore → Tentativo fallito, comportamento inadeguato.",
         2: "Molto insicuro → Errori gravi, necessità di intervento.",
         3: "Insicuro → Errori evidenti, esecuzione incerta.",
-        4: "Migliorabile → Errori non gravi, ma guida imprecisa.",
+        4: "Migliorabile → Errori non gravi, ma guida imprecisa.", 
         5: "Quasi sufficiente → Autonomia parziale, migliorabile.",
         6: "Sufficiente → Controllo adeguato, ma con margini di miglioramento.",
         7: "Discreto → Guida sicura con qualche imprecisione.",
@@ -638,11 +638,9 @@
         
         showHomeView();
         
-        // Check for pending Drive upload on load
         if (navigator.onLine) {
              checkPendingDriveUpload();
         }
-        // Listener for coming online
         window.addEventListener('online', checkPendingDriveUpload);
     }
 
@@ -652,7 +650,6 @@
         document.getElementById('student-name-input').value = ""; 
         loadSavedLessonsList(); 
         
-        // Modified Export Button Listener
         const exportBtn = document.getElementById('export-btn');
         exportBtn.onclick = async () => {
              await exportData();
@@ -961,10 +958,11 @@
                  throw new Error("URL Script non configurato");
              }
 
+             // Usiamo text/plain per evitare il preflight check (CORS)
              await fetch(GOOGLE_SCRIPT_URL, {
                  method: 'POST',
                  mode: 'no-cors',
-                 headers: { 'Content-Type': 'text/plain' }, // Fix CORS issue by sending as simple text
+                 headers: { 'Content-Type': 'text/plain' }, 
                  body: JSON.stringify(exportObj)
              });
              
@@ -998,7 +996,6 @@
 
     async function exportData() {
         const statusEl = document.getElementById('import-status');
-        const driveStatusEl = document.getElementById('drive-status');
         
         try {
             const exportObj = {
