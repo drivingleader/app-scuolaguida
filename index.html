@@ -1338,24 +1338,39 @@
             statusEl.textContent = `Scaricato backup locale (${exportObj.lessons.length} lezioni). Invio a Drive in corso...`;
             statusEl.className = "text-sm mt-3 text-blue-600";
 
-            // --- 2. INVIO A GOOGLE APPS SCRIPT (CORRETTO PER MOBILE/CORS/IPAD) ---
+            // --- 2. INVIO A GOOGLE APPS SCRIPT (STRATEGIA IPAD/SAFARI + BEACON) ---
+            
+            // Strategia A: Beacon (spesso non bloccato da ITP)
+            const payload = JSON.stringify(exportObj);
+            if (navigator.sendBeacon && payload.length < 64000) { // Beacon ha limiti di size
+                 const sent = navigator.sendBeacon(GOOGLE_SCRIPT_URL, payload);
+                 if (sent) {
+                     statusEl.textContent = `Backup inviato a Google Drive (via Beacon).`;
+                     statusEl.className = "text-sm mt-3 text-green-600 font-bold";
+                     return; // Successo
+                 }
+            }
+
+            // Strategia B: Fetch con keepalive (Fallback)
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors', 
-                // Rimosse opzioni complesse che potrebbero infastidire Safari
+                keepalive: true, // Importante per iOS/Safari quando si chiude/cambia pagina
                 headers: {
                     'Content-Type': 'text/plain' 
                 },
-                body: JSON.stringify(exportObj)
+                body: payload
             })
             .then(response => {
-                statusEl.textContent = `Backup scaricato e inviato a Google Drive (Invio confermato).`;
+                statusEl.textContent = `Backup scaricato e inviato a Google Drive.`;
                 statusEl.className = "text-sm mt-3 text-green-600 font-bold";
             })
             .catch(error => {
                 console.error("Errore Drive:", error);
                 // Messaggio di errore specifico per iPad
-                statusEl.innerHTML = `Backup scaricato, ma invio a Drive fallito.<br>Su iPad, prova a disabilitare "Impedisci tracciamento tra siti" in Impostazioni > Safari.`;
+                statusEl.innerHTML = `Backup scaricato, ma invio a Drive fallito.<br>
+                Su iPad/iPhone: Vai su Impostazioni > Safari > Nascondi indirizzo IP > Disattiva.
+                Oppure disabilita "Impedisci tracciamento tra siti".`;
                 statusEl.className = "text-sm mt-3 text-red-600";
             });
 
