@@ -417,6 +417,8 @@
 <!-- LOGICA JAVASCRIPT E STORAGE -->
 <script type="module">
 
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwpYgIOc0xlgRdMxTlPzCaZfFtjwFd8WVfHnTP7yUoMOxkmQxH4Iq5qEGwZAh5BKNXq/exec";
+
     let currentLessonId = null;
     let quickScores = {}; 
     
@@ -1284,8 +1286,10 @@
     
     function exportData() {
         const statusEl = document.getElementById('import-status');
+        let exportObj = null;
+
         try {
-            const exportObj = {
+            exportObj = {
                 appName: "RegistroValutazioniGuida",
                 exportDate: new Date().toISOString(),
                 lessons: []
@@ -1304,17 +1308,43 @@
                  return;
             }
 
+            // --- 1. DOWNLOAD LOCALE ---
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
             const date = new Date().toISOString().split('T')[0];
             downloadAnchorNode.setAttribute("download", `backup_registro_valutazioni_${date}.json`);
-            document.body.appendChild(downloadAnchorNode); // Richiesto per Firefox
+            document.body.appendChild(downloadAnchorNode); 
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
             
-            statusEl.textContent = `Esportate ${exportObj.lessons.length} valutazioni con successo.`;
-            statusEl.className = "text-sm mt-3 text-green-600";
+            statusEl.textContent = `Scaricato backup locale (${exportObj.lessons.length} lezioni). Invio a Drive in corso...`;
+            statusEl.className = "text-sm mt-3 text-blue-600";
+
+            // --- 2. INVIO A GOOGLE APPS SCRIPT ---
+            // Usiamo 'text/plain' per evitare il preflight CORS (OPTIONS) che GAS spesso non supporta
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8' 
+                },
+                body: JSON.stringify(exportObj)
+            })
+            .then(response => {
+                // Google Apps Script di solito risponde con redirect o JSON.
+                // Se la fetch non fallisce (rete), consideriamo inviato.
+                if (response.ok || response.type === 'opaque') {
+                     statusEl.textContent = `Backup scaricato e salvato con successo su Google Drive!`;
+                     statusEl.className = "text-sm mt-3 text-green-600 font-bold";
+                } else {
+                     throw new Error("Risposta server non valida");
+                }
+            })
+            .catch(error => {
+                console.error("Errore Drive:", error);
+                statusEl.textContent = `Backup scaricato, ma invio a Drive fallito (controlla connessione).`;
+                statusEl.className = "text-sm mt-3 text-red-600";
+            });
 
         } catch (error) {
             console.error("Errore durante l'esportazione:", error);
@@ -1397,4 +1427,3 @@
 </script>
 </body>
 </html>
-
