@@ -1342,9 +1342,9 @@
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors', 
-                credentials: 'omit', // MODIFICA IMPORTANTE: Evita invio cookie che Safari blocca
+                // Rimosse opzioni complesse che potrebbero infastidire Safari
                 headers: {
-                    'Content-Type': 'text/plain;charset=utf-8' 
+                    'Content-Type': 'text/plain' 
                 },
                 body: JSON.stringify(exportObj)
             })
@@ -1354,7 +1354,8 @@
             })
             .catch(error => {
                 console.error("Errore Drive:", error);
-                statusEl.textContent = `Backup scaricato, ma invio a Drive fallito (controlla connessione o impostazioni privacy Safari).`;
+                // Messaggio di errore specifico per iPad
+                statusEl.innerHTML = `Backup scaricato, ma invio a Drive fallito.<br>Su iPad, prova a disabilitare "Impedisci tracciamento tra siti" in Impostazioni > Safari.`;
                 statusEl.className = "text-sm mt-3 text-red-600";
             });
 
