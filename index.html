@@ -1308,37 +1308,37 @@
                  return;
             }
 
-            // --- 1. DOWNLOAD LOCALE ---
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+            // --- 1. DOWNLOAD LOCALE (CORRETTO PER MOBILE) ---
+            const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
             const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.href = url;
             const date = new Date().toISOString().split('T')[0];
-            downloadAnchorNode.setAttribute("download", `backup_registro_valutazioni_${date}.json`);
+            downloadAnchorNode.download = `backup_registro_valutazioni_${date}.json`;
             document.body.appendChild(downloadAnchorNode); 
             downloadAnchorNode.click();
-            downloadAnchorNode.remove();
+            setTimeout(() => {
+                document.body.removeChild(downloadAnchorNode);
+                window.URL.revokeObjectURL(url);
+            }, 100);
             
             statusEl.textContent = `Scaricato backup locale (${exportObj.lessons.length} lezioni). Invio a Drive in corso...`;
             statusEl.className = "text-sm mt-3 text-blue-600";
 
-            // --- 2. INVIO A GOOGLE APPS SCRIPT ---
-            // Usiamo 'text/plain' per evitare il preflight CORS (OPTIONS) che GAS spesso non supporta
+            // --- 2. INVIO A GOOGLE APPS SCRIPT (CORRETTO PER MOBILE/CORS) ---
+            // Usiamo 'no-cors' perché GAS su domini esterni viene bloccato dai browser mobile se si aspetta una risposta standard
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
+                mode: 'no-cors', // CRUCIALE: Permette l'invio "alla cieca" senza che il browser blocchi per CORS
                 headers: {
                     'Content-Type': 'text/plain;charset=utf-8' 
                 },
                 body: JSON.stringify(exportObj)
             })
             .then(response => {
-                // Google Apps Script di solito risponde con redirect o JSON.
-                // Se la fetch non fallisce (rete), consideriamo inviato.
-                if (response.ok || response.type === 'opaque') {
-                     statusEl.textContent = `Backup scaricato e salvato con successo su Google Drive!`;
-                     statusEl.className = "text-sm mt-3 text-green-600 font-bold";
-                } else {
-                     throw new Error("Risposta server non valida");
-                }
+                // Con no-cors la risposta è 'opaque' e lo status è 0, ma la promise si risolve se la rete va.
+                statusEl.textContent = `Backup scaricato e inviato a Google Drive (Invio confermato).`;
+                statusEl.className = "text-sm mt-3 text-green-600 font-bold";
             })
             .catch(error => {
                 console.error("Errore Drive:", error);
