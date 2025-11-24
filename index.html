@@ -54,7 +54,7 @@
         }
         
         /* FIX TABLET: Impedisce lo scorrimento della pagina quando si interagisce con gli input */
-        input[type="text"], textarea {
+        input[type="text"], textarea, select {
              touch-action: manipulation;
         }
         
@@ -225,13 +225,38 @@
     
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Crea Nuova Valutazione</h2>
-        <div class="flex flex-col sm:flex-row gap-4">
-            <input type="text" id="student-name-input" placeholder="Nome e Cognome Allievo/a" class="flex-grow w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-            <button id="start-lesson-btn" onclick="startNewLesson()" class="btn btn-primary">
+        
+        <!-- Form di inserimento dati -->
+        <div class="space-y-4">
+            <!-- Riga 1: Nome -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome Allievo/a</label>
+                <input type="text" id="student-name-input" placeholder="Es. Mario Rossi" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <!-- Riga 2: Patente e Durata -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo Patente</label>
+                    <input type="text" id="license-type-input" placeholder="Es. B" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 uppercase">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Durata Guida</label>
+                    <select id="duration-input" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="30">30 Minuti</option>
+                        <option value="60" selected>60 Minuti</option>
+                        <option value="120">120 Minuti</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Bottone Conferma -->
+            <button id="start-lesson-btn" onclick="startNewLesson()" class="btn btn-primary w-full mt-4">
                 Inizia Valutazione
             </button>
         </div>
-        <p id="landing-error" class="text-red-600 text-sm mt-2 hidden"></p>
+
+        <p id="landing-error" class="text-red-600 text-sm mt-3 hidden text-center"></p>
     </div>
     
     <div class="card">
@@ -275,7 +300,11 @@
                 <h1 class="text-xl sm:text-2xl font-bold text-gray-900">
                     <span id="student-name-display" class="text-blue-600">...</span>
                 </h1>
-                <p id="lock-status" class="text-sm font-medium text-gray-500">
+                <!-- Dettagli aggiuntivi Patente/Durata -->
+                <p id="lesson-details-display" class="text-sm text-gray-600 font-medium mt-1">
+                    <!-- Riempito via JS -->
+                </p>
+                <p id="lock-status" class="text-sm font-medium text-gray-500 mt-1">
                     Stato: <span class="text-green-600">In corso...</span>
                 </p>
             </div>
@@ -731,7 +760,12 @@
     function showHomeView() {
         document.getElementById('home-view').classList.remove('hidden');
         document.getElementById('calculator-page').classList.add('hidden');
-        document.getElementById('student-name-input').value = ""; // Pulisce l'input
+        
+        // Resetta campi
+        document.getElementById('student-name-input').value = "";
+        document.getElementById('license-type-input').value = "";
+        document.getElementById('duration-input').value = "60";
+        
         loadSavedLessonsList(); // Ricarica la lista
         
         // Collega i pulsanti Import/Export
@@ -758,6 +792,14 @@
     function startNewLesson() {
         const studentNameInput = document.getElementById('student-name-input');
         const studentName = studentNameInput.value.trim();
+        
+        // Nuovi campi
+        const licenseTypeInput = document.getElementById('license-type-input');
+        const licenseType = licenseTypeInput.value.trim().toUpperCase() || "B"; // Default B
+        
+        const durationInput = document.getElementById('duration-input');
+        const duration = durationInput.value;
+
         const errorEl = document.getElementById('landing-error');
         
         if (studentName.length < 3) {
@@ -776,13 +818,14 @@
         const lessonData = {
             id: lessonId,
             studentName: studentName,
+            licenseType: licenseType,
+            duration: duration,
             createdAt: new Date().toISOString(),
             notes: "",
             moduloSvolto: "nessuno",
             quickScores: defaultQuickScores,
             isLocked: false,
             finalScore: null
-            // Campi conferma rimossi
         };
 
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
@@ -971,6 +1014,13 @@
         // Popola i campi
         document.getElementById('student-name-display').textContent = lessonData.studentName;
         document.getElementById('lesson-notes').value = lessonData.notes || "";
+        
+        // Visualizza dettagli Patente e Durata
+        const detailsDisplay = document.getElementById('lesson-details-display');
+        const license = lessonData.licenseType || "B"; // Default visualizzazione
+        const dur = lessonData.duration || "60";
+        detailsDisplay.textContent = `Patente ${license} - Durata: ${dur} min`;
+
         
         // Carica il modulo salvato
         const modulo = lessonData.moduloSvolto || "nessuno";
