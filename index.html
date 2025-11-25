@@ -234,7 +234,21 @@
                 <input type="text" id="student-name-input" placeholder="Es. Mario Rossi" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
             </div>
 
-            <!-- Riga 2: Patente e Durata -->
+            <!-- Riga 2: Sede (Nuovo) -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Sede</label>
+                <select id="location-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="toggleLocationInput()">
+                    <option value="Colleferro">Colleferro</option>
+                    <option value="Genazzano">Genazzano</option>
+                    <option value="Palestrina">Palestrina</option>
+                    <option value="Paliano">Paliano</option>
+                    <option value="Roma">Roma</option>
+                    <option value="other">Altro (inserisci manuale)</option>
+                </select>
+                <input type="text" id="location-input-manual" placeholder="Specifica altra sede..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-2 hidden">
+            </div>
+
+            <!-- Riga 3: Patente e Durata -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo Patente</label>
@@ -300,7 +314,7 @@
                 <h1 class="text-xl sm:text-2xl font-bold text-gray-900">
                     <span id="student-name-display" class="text-blue-600">...</span>
                 </h1>
-                <!-- Dettagli aggiuntivi Patente/Durata -->
+                <!-- Dettagli aggiuntivi Patente/Durata/Sede -->
                 <p id="lesson-details-display" class="text-sm text-gray-600 font-medium mt-1">
                     <!-- Riempito via JS -->
                 </p>
@@ -765,6 +779,10 @@
         document.getElementById('student-name-input').value = "";
         document.getElementById('license-type-input').value = "";
         document.getElementById('duration-input').value = "60";
+        // Reset Location
+        document.getElementById('location-select').value = "Colleferro";
+        toggleLocationInput();
+        document.getElementById('location-input-manual').value = "";
         
         loadSavedLessonsList(); // Ricarica la lista
         
@@ -789,16 +807,36 @@
         loadLesson(lessonId); // Carica i dati dell'allievo specifico
     }
 
+    function toggleLocationInput() {
+        const select = document.getElementById('location-select');
+        const manualInput = document.getElementById('location-input-manual');
+        
+        if (select.value === 'other') {
+            manualInput.classList.remove('hidden');
+        } else {
+            manualInput.classList.add('hidden');
+        }
+    }
+    window.toggleLocationInput = toggleLocationInput;
+
     function startNewLesson() {
         const studentNameInput = document.getElementById('student-name-input');
         const studentName = studentNameInput.value.trim();
         
         // Nuovi campi
         const licenseTypeInput = document.getElementById('license-type-input');
-        const licenseType = licenseTypeInput.value.trim().toUpperCase() || "B"; // Default B
+        const licenseType = licenseTypeInput.value.trim().toUpperCase() || "B"; 
         
         const durationInput = document.getElementById('duration-input');
         const duration = durationInput.value;
+
+        // Campo Sede
+        const locationSelect = document.getElementById('location-select');
+        let location = locationSelect.value;
+        if (location === 'other') {
+            const manualInput = document.getElementById('location-input-manual');
+            location = manualInput.value.trim() || "Sede non specificata";
+        }
 
         const errorEl = document.getElementById('landing-error');
         
@@ -820,6 +858,7 @@
             studentName: studentName,
             licenseType: licenseType,
             duration: duration,
+            location: location, // Salvataggio sede
             createdAt: new Date().toISOString(),
             notes: "",
             moduloSvolto: "nessuno",
@@ -1015,11 +1054,12 @@
         document.getElementById('student-name-display').textContent = lessonData.studentName;
         document.getElementById('lesson-notes').value = lessonData.notes || "";
         
-        // Visualizza dettagli Patente e Durata
+        // Visualizza dettagli Patente, Durata e Sede
         const detailsDisplay = document.getElementById('lesson-details-display');
-        const license = lessonData.licenseType || "B"; // Default visualizzazione
+        const license = lessonData.licenseType || "B"; 
         const dur = lessonData.duration || "60";
-        detailsDisplay.textContent = `Patente ${license} - Durata: ${dur} min`;
+        const loc = lessonData.location || "Sede non specificata";
+        detailsDisplay.textContent = `Patente ${license} - ${dur} min - ${loc}`;
 
         
         // Carica il modulo salvato
