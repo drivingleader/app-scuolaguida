@@ -471,6 +471,9 @@
             manualLocInput.classList.remove('hidden');
             licenseSelect.innerHTML = '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
+            // FIX: Quando la sede è "other", forziamo la chiamata per mostrare il box manuale della patente
+            toggleLicenseInput(); 
+            updateStudentOptions();
             return;
         } else {
             manualLocInput.classList.add('hidden');
@@ -492,14 +495,23 @@
     window.updateLicenseOptions = updateLicenseOptions;
     
     function toggleLicenseInput() {
+        const locationSelect = document.getElementById('location-select');
         const licenseSelect = document.getElementById('license-type-select');
         const manualLicenseInput = document.getElementById('license-input-manual');
         
-        if(licenseSelect.value === 'other_license') {
-            manualLicenseInput.classList.remove('hidden');
-            manualLicenseInput.focus();
+        // Se la sede è "other", il box patente manuale deve apparire SEMPRE
+        if(locationSelect.value === 'other') {
+             licenseSelect.value = 'other_license'; // Forza selezione
+             manualLicenseInput.classList.remove('hidden');
+             // Non facciamo focus qui per non saltare se l'utente sta scrivendo la sede
         } else {
-            manualLicenseInput.classList.add('hidden');
+             // Comportamento standard
+             if(licenseSelect.value === 'other_license') {
+                manualLicenseInput.classList.remove('hidden');
+                manualLicenseInput.focus();
+            } else {
+                manualLicenseInput.classList.add('hidden');
+            }
         }
     }
     window.toggleLicenseInput = toggleLicenseInput;
